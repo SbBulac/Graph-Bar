@@ -16,13 +16,39 @@
             height: 100vh;
             display: flex;
             background-color: #252525;
-            color: #239B56;
+            color: #99dab5;
             /* Color hexadecimal base (verde neón) */
             text-shadow: 0 0 1px #239B56, 0 0 1px #239B56, 0 0 10px #239B56;
             /* Agregar sombras para el efecto neón */
             font-family: 'Roboto', sans-serif;
             justify-content: center;
             align-items: center;
+        }
+
+        .bar {
+            fill: #e16254;
+            stroke: #e16254;
+            stroke-width: 1;
+            filter: drop-shadow(0 0 .5px #CB4335) drop-shadow(0 0 .5px #CB4335) drop-shadow(0 0 .5px #CB4335);
+        }
+
+        .info-box {
+            visibility: hidden;
+        }
+
+        .bar:hover {
+            fill: #99dab5;
+            stroke: #239B56;
+            stroke-width: 1.9;
+            filter: drop-shadow(0 0 .5px #239B56) drop-shadow(0 0 .5px #239B56) drop-shadow(0 0 .5px #239B56);
+        }
+
+        .info-box rect {
+            fill: none;
+        }
+
+        .info-box text {
+            fill: #99dab5;
         }
     </style>
     <div id="chart"></div>
@@ -36,9 +62,10 @@
                 // Formato de fechas
                 const parseDate = d3.timeParse("%Y-%m-%d");
                 const formatTime = d3.timeFormat("%Y"); // Formato para mostrar solo el año
+                const formatValue = d3.format(".3s"); // Formato para el valor del PIB en miles de millones
 
                 // Convertir las fechas en objetos de tipo Date y extraer los valores del PIB
-                const dataArray = data.data.map(d => [parseDate(d[0]), d[1]]);
+                const dataArray = data.data.map(d => [parseDate(d[0]), parseFloat(d[1])]); // Convertir a número
 
                 // Aumentar el tamaño del SVG y agregar más espacio
                 const margin = { top: 70, right: 30, bottom: 150, left: 60 };
@@ -67,6 +94,24 @@
 
                 const yAxis = d3.axisLeft(y);
 
+                const infoBox = svg.append("g")
+                    .attr("class", "info-box")
+                    .attr("pointer-events", "none")
+                    .style("user-select", "none")
+                    .style("visibility", "hidden");
+
+                infoBox.append("rect")
+                    .attr("width", 150)
+                    .attr("height", 60)
+                    .attr("fill", "rgba(0, 0, 0, 0.8)")
+                    .attr("rx", 10)
+                    .attr("ry", 10);
+
+                infoBox.append("text")
+                    .attr("x", 10)
+                    .attr("y", 25)
+                    .text("");
+
                 svg.selectAll(".bar")
                     .data(dataArray)
                     .enter()
@@ -76,9 +121,16 @@
                     .attr("y", d => y(d[1]))
                     .attr("width", x.bandwidth() - 1) // Reducir el ancho de las barras
                     .attr("height", d => height - y(d[1]))
-                    .attr("fill", "#CB4335")
-                    .attr("stroke", "#CB4335")
-                    .attr("stroke-width", 2)
+                    .on("mouseover", function (d) {
+                        const [xPos, yPos] = d3.mouse(this);
+                        infoBox.attr("position", `absolute`)
+                        infoBox.attr("transition", `ease-in 1s`)
+                            .style("visibility", "visible");
+                        infoBox.select("text").text(`Fecha: ${formatTime(d[0])}\nValor del PIB: ${formatValue(d[1])} miles de millones`);
+                    })
+                    .on("mouseout", function () {
+                        infoBox.style("visibility", "hidden");
+                    });
 
                 // Agregar ejes
                 svg.append("g")
@@ -98,7 +150,7 @@
                     .attr("x", width / 2)
                     .attr("y", height + 60) // Ajustar el desplazamiento vertical para "Fecha"
                     .attr("text-anchor", "middle")
-                    .attr("fill", "#239B56")
+                    .attr("fill", "#99dab5")
                     .text("Fecha");
 
                 svg.append("text")
@@ -106,7 +158,7 @@
                     .attr("x", 0 - height / 2)
                     .attr("y", -45) // Ajustar el desplazamiento vertical para "Valor del PIB (en miles de millones)"
                     .attr("text-anchor", "middle")
-                    .attr("fill", "#239B56")
+                    .attr("fill", "#99dab5")
                     .text("Valor del PIB (en miles de millones)");
 
             })

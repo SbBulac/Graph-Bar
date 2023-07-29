@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Gráfica de Barras con D3.js</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+
+<body>
+    <style>
+        * {
+            margin: auto;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            background-color: #252525;
+            color: #239B56;
+            /* Color hexadecimal base (verde neón) */
+            text-shadow: 0 0 1px #239B56, 0 0 1px #239B56, 0 0 10px #239B56;
+            /* Agregar sombras para el efecto neón */
+            font-family: 'Roboto', sans-serif;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <div id="chart"></div>
+
+    <script>
+        // Consumir la API y obtener los datos
+        const apiUrl = "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json";
+
+        d3.json(apiUrl)
+            .then(data => {
+                // Formato de fechas
+                const parseDate = d3.timeParse("%Y-%m-%d");
+                const formatTime = d3.timeFormat("%Y"); // Formato para mostrar solo el año
+
+                // Convertir las fechas en objetos de tipo Date y extraer los valores del PIB
+                const dataArray = data.data.map(d => [parseDate(d[0]), d[1]]);
+
+                // Aumentar el tamaño del SVG y agregar más espacio
+                const margin = { top: 70, right: 30, bottom: 150, left: 60 };
+                const width = 1200 - margin.left - margin.right; // Aumentar el ancho del SVG
+                const height = 600 - margin.top - margin.bottom; // Aumentar el alto del SVG
+
+                const svg = d3.select("#chart")
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                const x = d3.scaleBand()
+                    .domain(dataArray.map(d => d[0]))
+                    .range([0, width])
+                    .padding(.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(dataArray, d => d[1])])
+                    .range([height, 0]);
+
+                const xAxis = d3.axisBottom(x)
+                    .tickFormat(d => formatTime(d)) // Mostrar solo el año en las etiquetas del eje X
+                    .tickValues(x.domain().filter((d, i) => i % Math.ceil(dataArray.length / 15) === 0)); // Mostrar aproximadamente 15 fechas
+
+                const yAxis = d3.axisLeft(y);
+
+                svg.selectAll(".bar")
+                    .data(dataArray)
+                    .enter()
+                    .append("rect")
+                    .attr("class", "bar")
+                    .attr("x", d => x(d[0]))
+                    .attr("y", d => y(d[1]))
+                    .attr("width", x.bandwidth() - 1) // Reducir el ancho de las barras
+                    .attr("height", d => height - y(d[1]))
+                    .attr("fill", "#CB4335")
+                    .attr("stroke", "#CB4335")
+                    .attr("stroke-width", 2)
+
+                // Agregar ejes
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis)
+                    .selectAll("text")
+                    .attr("transform", "rotate(90)") // Rotar las etiquetas verticalmente
+                    .attr("dx", "1em") // Ajustar el desplazamiento horizontal
+                    .attr("dy", "0.5em") // Ajustar el desplazamiento vertical
+                    .style("text-anchor", "start"); // Alinear el inicio del texto
+
+                svg.append("g")
+                    .call(yAxis);
+
+                // Agregar etiquetas
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height + 60) // Ajustar el desplazamiento vertical para "Fecha"
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "#239B56")
+                    .text("Fecha");
+
+                svg.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("x", 0 - height / 2)
+                    .attr("y", -45) // Ajustar el desplazamiento vertical para "Valor del PIB (en miles de millones)"
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "#239B56")
+                    .text("Valor del PIB (en miles de millones)");
+
+            })
+            .catch(error => {
+                console.error("Error al obtener los datos de la API:", error);
+            });
+    </script>
+</body>
+
+</html>

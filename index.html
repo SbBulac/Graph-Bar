@@ -63,7 +63,7 @@
 
                 const xAxis = d3.axisBottom(x)
                     .tickFormat(d => formatTime(d)) // Mostrar solo el año en las etiquetas del eje X
-                    .tickValues(x.domain().filter((d, i) => i % Math.ceil(dataArray.length / 15) === 0)); // Mostrar aproximadamente 15 fechas
+                    .tickValues(x.domain().filter((d, i) => i % Math.ceil(dataArray.length / 15) === 7)); // Mostrar aproximadamente 15 fechas
 
                 const yAxis = d3.axisLeft(y);
 

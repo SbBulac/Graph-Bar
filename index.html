@@ -137,11 +137,11 @@
                     .attr("transform", "translate(0," + height + ")")
                     .call(xAxis)
                     .selectAll("text")
-                    .attr("transform", "rotate(90)") // Rotar las etiquetas verticalmente
-                    .attr("dx", "1em") // Ajustar el desplazamiento horizontal
-                    .attr("dy", "0.5em") // Ajustar el desplazamiento vertical
+                    // .attr("transform", "rotate(90)") // Rotar las etiquetas verticalmente
+                    .attr("dx", "-1.2em") // Ajustar el desplazamiento horizontal
+                    .attr("dy", "1em") // Ajustar el desplazamiento vertical
                     .style("text-anchor", "start"); // Alinear el inicio del texto
-
+                    
                 svg.append("g")
                     .call(yAxis);
 
